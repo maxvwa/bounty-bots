@@ -27,7 +27,7 @@ async def _load_user_by_reference(db: AsyncSession, reference: uuid.UUID) -> Use
     return user
 
 
-@router.post("", response_model=UserRead, status_code=201)
+@router.post("", response_model=UserRead, response_model_by_alias=False, status_code=201)
 async def create_user(payload: UserCreate, db: AsyncSession = Depends(get_db)) -> UserRead:
     """Create an example user with explicit sequence-driven BIGINT primary key."""
 
@@ -54,7 +54,7 @@ async def create_user(payload: UserCreate, db: AsyncSession = Depends(get_db)) -
     return UserRead.model_validate(created_user)
 
 
-@router.get("", response_model=list[UserRead])
+@router.get("", response_model=list[UserRead], response_model_by_alias=False)
 async def list_users(
     limit: int = 50,
     db: AsyncSession = Depends(get_db),

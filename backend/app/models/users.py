@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Sequence
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Sequence, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -24,6 +24,8 @@ class User(Base):
         ForeignKey("timezones.timezone_id"),
         nullable=False,
     )
+    email: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
+    password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
 

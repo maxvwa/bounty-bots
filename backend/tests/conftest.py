@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engin
 
 from app.config import settings
 from app.database import get_db, init_db_schema
-from app.main import app, seed_timezones
+from app.main import app, seed_challenges, seed_timezones
 
 _BASE_URL = os.environ.get("TEST_DATABASE_BASE_URL", settings.DATABASE_URL.rsplit("/", 1)[0])
 TEST_DATABASE_URL = f"{_BASE_URL}/app_db_test"
@@ -28,6 +28,7 @@ async def test_engine() -> AsyncGenerator[AsyncEngine]:
     async with AsyncSession(engine) as session:
         await init_db_schema(session)
         await seed_timezones(session)
+        await seed_challenges(session)
 
     yield engine
 
@@ -77,7 +78,10 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
 
     app.dependency_overrides[get_db] = _override_get_db
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as async_client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as async_client:
         yield async_client
 
     app.dependency_overrides.clear()

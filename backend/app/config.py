@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "postgresql+asyncpg://app_user:app_password@localhost:5432/app_db"
     SECRET_KEY: str = "change-me"
+    JWT_SECRET: str = "change-me-jwt-secret-minimum-32-bytes"
+    JWT_EXPIRY_HOURS: int = 24
     DEBUG: bool = True
     APP_ENV: str = "local"
     SEED_DEMO_DATA: bool = False
@@ -27,6 +29,9 @@ class Settings(BaseSettings):
     AUTH_AUDIENCE: str = ""
     AUTH_JWKS_URL: str = ""
     AUTH_HS256_SHARED_SECRET: str = ""
+    MOLLIE_API_KEY: str = ""
+    MOLLIE_REDIRECT_BASE_URL: str = "http://localhost:5173"
+    MOLLIE_WEBHOOK_BASE_URL: str = "http://localhost:8000"
     CORS_ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://localhost:8000"
 
     @property

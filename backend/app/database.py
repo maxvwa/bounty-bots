@@ -21,6 +21,11 @@ class Base(DeclarativeBase):
 DB_INIT_ORDER = [
     "timezones.sql",
     "users.sql",
+    "challenges.sql",
+    "conversations.sql",
+    "messages.sql",
+    "payments.sql",
+    "attempts.sql",
 ]
 
 
@@ -52,25 +57,18 @@ async def init_db_schema(db: AsyncSession) -> None:
 
     db_dir = _find_db_dir()
     for sql_file_name in DB_INIT_ORDER:
-        table_name = sql_file_name.removesuffix(".sql")
         sql_path = db_dir / sql_file_name
         if not sql_path.exists():
             raise FileNotFoundError(f"Required schema file missing: {sql_path}")
 
-        table_exists_result = await db.execute(
-            text(
-                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = :table_name)"
-            ),
-            {"table_name": table_name},
-        )
-        table_exists = bool(table_exists_result.scalar())
-
         sql_content = sql_path.read_text(encoding="utf-8")
-        statements = [statement.strip() for statement in sql_content.split(";") if statement.strip()]
+        statements = [
+            statement.strip()
+            for statement in sql_content.split(";")
+            if statement.strip()
+        ]
 
         for statement in statements:
-            if table_exists and not statement.upper().startswith("CREATE SEQUENCE"):
-                continue
             await db.execute(text(statement))
 
     await db.commit()

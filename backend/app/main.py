@@ -10,8 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db, init_db_schema
+from app.models.challenges import Challenge
 from app.models.timezones import Timezone
-from app.routers import health, users
+from app.routers import attempts, auth, challenges, health, payments, users
+from app.static_data.challenges import SEED_CHALLENGES
 from app.static_data.timezones import TimezoneEnum
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +30,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async for db in get_db():
         await init_db_schema(db)
         await seed_timezones(db)
+        await seed_challenges(db)
         break
 
     yield
@@ -55,6 +58,35 @@ async def seed_timezones(db: AsyncSession) -> None:
     await db.commit()
 
 
+async def seed_challenges(db: AsyncSession) -> None:
+    """Seed static challenge rows with stable identifiers."""
+
+    now = pendulum.now("UTC").naive()
+    for seed_challenge in SEED_CHALLENGES:
+        result = await db.execute(
+            select(Challenge).where(Challenge.challenge_id == seed_challenge.challenge_id)
+        )
+        existing_challenge = result.scalars().first()
+        if existing_challenge is not None:
+            continue
+
+        db.add(
+            Challenge(
+                challenge_id=seed_challenge.challenge_id,
+                title=seed_challenge.title,
+                description=seed_challenge.description,
+                difficulty=seed_challenge.difficulty.value,
+                secret=seed_challenge.secret,
+                cost_per_attempt_cents=seed_challenge.cost_per_attempt_cents,
+                prize_pool_cents=seed_challenge.prize_pool_cents,
+                is_active=seed_challenge.is_active,
+                created_at=now,
+                updated_at=now,
+            )
+        )
+    await db.commit()
+
+
 app = FastAPI(
     title="Starter Template API",
     description="Reusable FastAPI + Postgres local development scaffold",
@@ -72,6 +104,10 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(users.router)
+app.include_router(auth.router)
+app.include_router(challenges.router)
+app.include_router(payments.router)
+app.include_router(attempts.router)
 
 
 @app.get("/")
