@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import { ApiError } from './api/client'
 import NavBar from './components/NavBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './context/AuthContext'
@@ -52,8 +53,20 @@ function readChallengeId(pathname: string): number | null {
 }
 
 function App() {
-  const { currentUser, isAuthenticated, isInitializing, login, logout, register } = useAuth()
+  const {
+    createCreditPurchase,
+    creditBalance,
+    currentUser,
+    isAuthenticated,
+    isInitializing,
+    login,
+    logout,
+    refreshCreditBalance,
+    register,
+  } = useAuth()
   const { navigate, pathname } = useLocationPath()
+  const [isPurchasingCredits, setIsPurchasingCredits] = useState(false)
+  const [topUpError, setTopUpError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isInitializing) {
@@ -74,7 +87,12 @@ function App() {
 
   const protectedContent = useMemo(() => {
     if (pathname === '/challenges') {
-      return <ChallengeListPage onNavigate={navigate} />
+      return (
+        <ChallengeListPage
+          onNavigate={navigate}
+          onRefreshCredits={refreshCreditBalance}
+        />
+      )
     }
 
     if (challengeId) {
@@ -82,7 +100,7 @@ function App() {
     }
 
     return <section className="app-empty">Page not found.</section>
-  }, [challengeId, navigate, pathname])
+  }, [challengeId, navigate, pathname, refreshCreditBalance])
 
   if (isInitializing) {
     return <section className="app-loading">Loading...</section>
@@ -96,19 +114,40 @@ function App() {
     />
   )
 
+  async function handleTopUpCredits() {
+    setIsPurchasingCredits(true)
+    setTopUpError(null)
+    try {
+      const purchase = await createCreditPurchase(1000)
+      window.location.assign(purchase.checkout_url)
+    } catch (error) {
+      if (error instanceof ApiError && typeof error.body === 'object' && error.body) {
+        const body = error.body as { detail?: string }
+        setTopUpError(body.detail ?? 'Unable to create credit purchase')
+      } else {
+        setTopUpError('Unable to create credit purchase')
+      }
+      setIsPurchasingCredits(false)
+    }
+  }
+
   return (
     <div className="app-shell">
       <NavBar
         currentPath={pathname}
         isAuthenticated={isAuthenticated}
         email={currentUser?.email ?? null}
+        balanceCredits={creditBalance}
+        isPurchasingCredits={isPurchasingCredits}
         onNavigate={navigate}
+        onTopUpCredits={() => void handleTopUpCredits()}
         onLogout={() => {
           logout()
           navigate('/login')
         }}
       />
       <main className="app-main">
+        {topUpError && <p className="app-error-banner">{topUpError}</p>}
         {pathname === '/login' ? (
           loginPage
         ) : (

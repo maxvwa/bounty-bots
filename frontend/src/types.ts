@@ -18,6 +18,7 @@ export interface ChallengeListItem {
   description: string
   difficulty: string
   cost_per_attempt_cents: number
+  attack_cost_credits: number
   prize_pool_cents: number
   is_active: boolean
 }
@@ -40,12 +41,17 @@ export interface Message {
   conversation_id: number
   role: 'user' | 'assistant'
   content: string
+  is_secret_exposure: boolean
   created_at: string
 }
 
 export interface SendMessageResponse {
   user_message: Message
   bot_message: Message
+  did_expose_secret: boolean
+  credits_charged: number
+  remaining_credits: number
+  updated_prize_pool_cents: number
 }
 
 export interface PaymentCreateResponse {
@@ -77,4 +83,27 @@ export interface AttemptRead {
 export interface AttemptResponse {
   attempt: AttemptRead
   message: string
+}
+
+export interface CreditBalanceResponse {
+  balance_credits: number
+}
+
+export interface CreditPurchaseCreateResponse {
+  credit_purchase_id: number
+  credits_purchased: number
+  amount_cents: number
+  status: string
+  checkout_url: string
+}
+
+export interface CreditPurchaseReadResponse {
+  credit_purchase_id: number
+  user_id: number
+  mollie_payment_id: string | null
+  amount_cents: number
+  credits_purchased: number
+  status: string
+  created_at: string
+  updated_at: string
 }

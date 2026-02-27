@@ -154,6 +154,12 @@
   color: var(--bb-text);
 }
 
+.message.assistant.exposure {
+  background: rgba(217, 190, 102, 0.15);
+  border: 1px solid rgba(217, 190, 102, 0.5);
+  color: #f2e4b0;
+}
+
 .message-empty {
   color: var(--bb-text-muted);
   margin: auto;
@@ -184,6 +190,12 @@
   cursor: pointer;
   font-weight: 700;
   padding: 0.6rem 0.95rem;
+}
+
+.message-credit-warning {
+  color: var(--bb-warning);
+  font-size: 0.86rem;
+  margin: 0;
 }
 
 .secret-panel {

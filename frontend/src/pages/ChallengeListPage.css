@@ -17,6 +17,11 @@
   margin: 0.45rem 0 0;
 }
 
+.challenge-purchase-message {
+  color: var(--bb-accent);
+  font-size: 0.9rem;
+}
+
 .challenge-grid {
   display: grid;
   gap: 0.95rem;
