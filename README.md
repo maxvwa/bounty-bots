@@ -38,8 +38,13 @@ The Vite dev server runs at `http://localhost:5173`. Set `VITE_API_BASE_URL` in 
 ## Docker (Production)
 
 ```bash
-docker-compose up --build
+cp .env.example .env
+# edit .env secrets before first start
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-- Backend: `http://localhost:8000`
-- Frontend: `http://localhost:5173`
+- Frontend: `http://<server-ip>`
+- Backend API (proxied): `http://<server-ip>/api`
+
+The production compose file does not expose Postgres or the backend directly.
+Only the reverse proxy is published on port `80`.
