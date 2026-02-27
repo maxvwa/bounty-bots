@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ApiError, apiFetch } from '../api/client'
+import { useAuth } from '../context/AuthContext'
 import type {
   AttemptResponse,
   ChallengeDetail,
@@ -72,6 +73,7 @@ function formatCents(cents: number): string {
 }
 
 export default function ChallengeChatPage({ challengeId, onNavigate }: ChallengeChatPageProps) {
+  const { creditBalance, refreshCreditBalance } = useAuth()
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null)
@@ -94,6 +96,8 @@ export default function ChallengeChatPage({ challengeId, onNavigate }: Challenge
         : null,
     [activeConversationId, conversations],
   )
+  const hasInsufficientCredits =
+    challenge !== null && creditBalance < challenge.attack_cost_credits
 
   useEffect(() => {
     const loadPage = async () => {
@@ -258,6 +262,18 @@ export default function ChallengeChatPage({ challengeId, onNavigate }: Challenge
         payload.user_message,
         payload.bot_message,
       ])
+      setChallenge((previousValue) =>
+        previousValue
+          ? {
+              ...previousValue,
+              prize_pool_cents: payload.updated_prize_pool_cents,
+            }
+          : previousValue,
+      )
+      if (payload.did_expose_secret) {
+        setInfoMessage('Exposure event detected: secret leaked in assistant response.')
+      }
+      await refreshCreditBalance()
       setChatInput('')
     } catch (requestError) {
       setErrorMessage(parseApiError(requestError))
@@ -312,6 +328,8 @@ export default function ChallengeChatPage({ challengeId, onNavigate }: Challenge
         <p>{challenge.description}</p>
         <div className="challenge-stats">
           <span>{challenge.difficulty}</span>
+          <span>Attack: {challenge.attack_cost_credits} credits</span>
+          <span>Balance: {creditBalance} credits</span>
           <span>Attempt: {formatCents(challenge.cost_per_attempt_cents)}</span>
           <span>Prize: {formatCents(challenge.prize_pool_cents)}</span>
         </div>
@@ -351,7 +369,13 @@ export default function ChallengeChatPage({ challengeId, onNavigate }: Challenge
               messages.map((message) => (
                 <article
                   key={message.message_id}
-                  className={message.role === 'user' ? 'message user' : 'message assistant'}
+                  className={
+                    message.role === 'user'
+                      ? 'message user'
+                      : message.is_secret_exposure
+                        ? 'message assistant exposure'
+                        : 'message assistant'
+                  }
                 >
                   {message.content}
                 </article>
@@ -366,10 +390,20 @@ export default function ChallengeChatPage({ challengeId, onNavigate }: Challenge
               onChange={(event) => setChatInput(event.target.value)}
               placeholder="Send a challenge prompt..."
             />
-            <button type="submit" disabled={isSendingMessage || !chatInput.trim()}>
-              Send
+            <button
+              type="submit"
+              disabled={isSendingMessage || !chatInput.trim() || hasInsufficientCredits}
+            >
+              {hasInsufficientCredits
+                ? `Need ${challenge.attack_cost_credits} credits`
+                : 'Send'}
             </button>
           </form>
+          {hasInsufficientCredits && (
+            <p className="message-credit-warning">
+              Insufficient credits. Buy more credits from the top bar to continue attacks.
+            </p>
+          )}
 
           <section className="secret-panel">
             <h3>Submit Secret Guess</h3>

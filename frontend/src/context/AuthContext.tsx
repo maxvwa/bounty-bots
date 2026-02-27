@@ -15,15 +15,24 @@ import {
   loadAuthToken,
   saveAuthToken,
 } from '../api/client'
-import type { AuthTokenResponse, UserMe } from '../types'
+import type {
+  AuthTokenResponse,
+  CreditBalanceResponse,
+  CreditPurchaseCreateResponse,
+  UserMe,
+} from '../types'
 
 interface AuthContextValue {
   token: string | null
   currentUser: UserMe | null
+  creditBalance: number
   isAuthenticated: boolean
   isInitializing: boolean
+  isBalanceLoading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
+  refreshCreditBalance: () => Promise<void>
+  createCreditPurchase: (amountCents: number) => Promise<CreditPurchaseCreateResponse>
   logout: () => void
 }
 
@@ -36,24 +45,54 @@ async function fetchCurrentUser(token: string): Promise<UserMe> {
   })
 }
 
+async function fetchCreditBalance(token: string): Promise<number> {
+  const payload = await apiFetch<CreditBalanceResponse>('/credits/balance', {
+    authToken: token,
+    skipAuthRedirect: true,
+  })
+  return payload.balance_credits
+}
+
 function useAuthState() {
   const [token, setToken] = useState<string | null>(() => loadAuthToken())
   const [currentUser, setCurrentUser] = useState<UserMe | null>(null)
+  const [creditBalance, setCreditBalance] = useState<number>(0)
   const [isInitializing, setIsInitializing] = useState<boolean>(true)
+  const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
 
   const logout = useCallback(() => {
     clearAuthToken()
     setToken(null)
     setCurrentUser(null)
+    setCreditBalance(0)
   }, [])
+
+  const refreshCreditBalance = useCallback(async () => {
+    if (!token) {
+      setCreditBalance(0)
+      return
+    }
+
+    setIsBalanceLoading(true)
+    try {
+      const balance = await fetchCreditBalance(token)
+      setCreditBalance(balance)
+    } finally {
+      setIsBalanceLoading(false)
+    }
+  }, [token])
 
   const applyToken = useCallback(
     async (nextToken: string) => {
       saveAuthToken(nextToken)
       setToken(nextToken)
       try {
-        const me = await fetchCurrentUser(nextToken)
+        const [me, balance] = await Promise.all([
+          fetchCurrentUser(nextToken),
+          fetchCreditBalance(nextToken),
+        ])
         setCurrentUser(me)
+        setCreditBalance(balance)
       } catch {
         logout()
         throw new Error('Unable to load authenticated user')
@@ -72,6 +111,21 @@ function useAuthState() {
       await applyToken(response.access_token)
     },
     [applyToken],
+  )
+
+  const createCreditPurchase = useCallback(
+    async (amountCents: number) => {
+      if (!token) {
+        throw new Error('Not authenticated')
+      }
+
+      return apiFetch<CreditPurchaseCreateResponse>('/credits/purchases', {
+        method: 'POST',
+        authToken: token,
+        body: JSON.stringify({ amount_cents: amountCents }),
+      })
+    },
+    [token],
   )
 
   const register = useCallback(
@@ -95,9 +149,13 @@ function useAuthState() {
       }
 
       try {
-        const me = await fetchCurrentUser(existingToken)
+        const [me, balance] = await Promise.all([
+          fetchCurrentUser(existingToken),
+          fetchCreditBalance(existingToken),
+        ])
         setToken(existingToken)
         setCurrentUser(me)
+        setCreditBalance(balance)
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
           clearAuthToken()
@@ -115,10 +173,14 @@ function useAuthState() {
   return {
     token,
     currentUser,
+    creditBalance,
     isAuthenticated: Boolean(token),
     isInitializing,
+    isBalanceLoading,
     login,
     register,
+    refreshCreditBalance,
+    createCreditPurchase,
     logout,
   }
 }

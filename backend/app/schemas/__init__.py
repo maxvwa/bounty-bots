@@ -8,6 +8,12 @@ from app.schemas.challenges import (
     MessageRead,
     SendMessageResponse,
 )
+from app.schemas.credits import (
+    CreditBalanceResponse,
+    CreditPurchaseCreateRequest,
+    CreditPurchaseCreateResponse,
+    CreditPurchaseReadResponse,
+)
 from app.schemas.payments import PaymentCreateRequest, PaymentCreateResponse, PaymentStatusResponse
 from app.schemas.users import UserCreate, UserRead
 
@@ -17,6 +23,10 @@ __all__ = [
     "ChallengeDetail",
     "ChallengeListItem",
     "ConversationRead",
+    "CreditBalanceResponse",
+    "CreditPurchaseCreateRequest",
+    "CreditPurchaseCreateResponse",
+    "CreditPurchaseReadResponse",
     "LoginRequest",
     "MessageCreate",
     "MessageRead",

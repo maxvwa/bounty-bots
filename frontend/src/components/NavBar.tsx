@@ -4,7 +4,10 @@ interface NavBarProps {
   currentPath: string
   isAuthenticated: boolean
   email: string | null
+  balanceCredits: number
+  isPurchasingCredits: boolean
   onNavigate: (path: string) => void
+  onTopUpCredits: () => void
   onLogout: () => void
 }
 
@@ -19,7 +22,10 @@ export default function NavBar({
   currentPath,
   isAuthenticated,
   email,
+  balanceCredits,
+  isPurchasingCredits,
   onNavigate,
+  onTopUpCredits,
   onLogout,
 }: NavBarProps) {
   return (
@@ -43,6 +49,14 @@ export default function NavBar({
         {isAuthenticated ? (
           <>
             <span className="nav-email">{email ?? 'Authenticated user'}</span>
+            <span className="nav-balance">{balanceCredits} credits</span>
+            <button
+              className="nav-topup"
+              onClick={onTopUpCredits}
+              disabled={isPurchasingCredits}
+            >
+              {isPurchasingCredits ? 'Preparing...' : 'Buy 100 credits'}
+            </button>
             <button className="nav-logout" onClick={onLogout}>
               Logout
             </button>

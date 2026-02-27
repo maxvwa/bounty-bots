@@ -26,6 +26,9 @@ DB_INIT_ORDER = [
     "messages.sql",
     "payments.sql",
     "attempts.sql",
+    "credit_wallets.sql",
+    "credit_purchases.sql",
+    "credit_transactions.sql",
 ]
 
 
