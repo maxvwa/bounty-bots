@@ -4,3 +4,13 @@ Port 5173 is in use, trying another one...
 
   ➜  Local:   http://localhost:5174/
   ➜  Network: use --host to expose
+3:12:42 PM [vite] changed tsconfig file detected: /Users/ernestvanwalsem/workspace/bounty-bots/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+3:12:42 PM [vite] vite.config.ts changed, restarting server...
+3:12:42 PM [vite] (client) page reload index.html
+failed to load config from /Users/ernestvanwalsem/workspace/bounty-bots/frontend/vite.config.ts
+3:12:42 PM [vite] Cannot find package 'vite' imported from /Users/ernestvanwalsem/workspace/bounty-bots/frontend/vite.config.ts.timestamp-1772201562592-62d3e936cf182.mjs
+3:12:42 PM [vite] server restart failed
+3:22:08 PM [vite] vite.config.ts changed, restarting server...
+failed to load config from /Users/ernestvanwalsem/workspace/bounty-bots/frontend/vite.config.ts
+3:22:08 PM [vite] Cannot find package 'vite' imported from /Users/ernestvanwalsem/workspace/bounty-bots/frontend/vite.config.ts.timestamp-1772202128064-79c7645b300d3.mjs
+3:22:08 PM [vite] server restart failed
