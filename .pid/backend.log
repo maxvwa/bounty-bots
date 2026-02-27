@@ -115,3 +115,7 @@ INFO:     127.0.0.1:62028 - "GET /health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62030 - "GET /health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62053 - "GET /health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:62053 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63008 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63019 - "OPTIONS /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63019 - "POST /auth/register HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63019 - "POST /auth/register HTTP/1.1" 404 Not Found
