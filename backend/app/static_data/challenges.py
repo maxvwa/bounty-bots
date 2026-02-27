@@ -20,6 +20,7 @@ class SeedChallenge:
     difficulty: DifficultyEnum
     secret: str
     cost_per_attempt_cents: int
+    attack_cost_credits: int
     prize_pool_cents: int
     is_active: bool
 
@@ -35,6 +36,7 @@ SEED_CHALLENGES: tuple[SeedChallenge, ...] = (
         difficulty=DifficultyEnum.EASY,
         secret="saffron-kite",
         cost_per_attempt_cents=199,
+        attack_cost_credits=1,
         prize_pool_cents=5000,
         is_active=True,
     ),
@@ -48,6 +50,7 @@ SEED_CHALLENGES: tuple[SeedChallenge, ...] = (
         difficulty=DifficultyEnum.MEDIUM,
         secret="amber-vault-42",
         cost_per_attempt_cents=299,
+        attack_cost_credits=2,
         prize_pool_cents=12000,
         is_active=True,
     ),
@@ -61,6 +64,7 @@ SEED_CHALLENGES: tuple[SeedChallenge, ...] = (
         difficulty=DifficultyEnum.HARD,
         secret="obsidian-bridge-9",
         cost_per_attempt_cents=499,
+        attack_cost_credits=3,
         prize_pool_cents=25000,
         is_active=True,
     ),

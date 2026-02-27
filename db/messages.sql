@@ -6,7 +6,11 @@ CREATE TABLE IF NOT EXISTS messages (
     conversation_id BIGINT NOT NULL REFERENCES conversations (conversation_id),
     role TEXT NOT NULL,
     content TEXT NOT NULL,
+    is_secret_exposure BOOLEAN NOT NULL,
     created_at TIMESTAMP NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages (conversation_id);
+
+ALTER TABLE messages
+ADD COLUMN IF NOT EXISTS is_secret_exposure BOOLEAN NOT NULL DEFAULT FALSE;

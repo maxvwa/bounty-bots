@@ -8,8 +8,12 @@ CREATE TABLE IF NOT EXISTS challenges (
     difficulty TEXT NOT NULL,
     secret TEXT NOT NULL,
     cost_per_attempt_cents BIGINT NOT NULL,
+    attack_cost_credits BIGINT NOT NULL,
     prize_pool_cents BIGINT NOT NULL,
     is_active BOOLEAN NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
 );
+
+ALTER TABLE challenges
+ADD COLUMN IF NOT EXISTS attack_cost_credits BIGINT NOT NULL DEFAULT 1;

@@ -11,6 +11,7 @@ class ChallengeListItem(BaseModel):
     description: str
     difficulty: str
     cost_per_attempt_cents: int
+    attack_cost_credits: int
     prize_pool_cents: int
     is_active: bool
 
@@ -25,6 +26,7 @@ class ChallengeDetail(BaseModel):
     description: str
     difficulty: str
     cost_per_attempt_cents: int
+    attack_cost_credits: int
     prize_pool_cents: int
     is_active: bool
     created_at: datetime
@@ -68,6 +70,7 @@ class MessageRead(BaseModel):
     conversation_id: int
     role: str
     content: str
+    is_secret_exposure: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -78,3 +81,7 @@ class SendMessageResponse(BaseModel):
 
     user_message: MessageRead
     bot_message: MessageRead
+    did_expose_secret: bool
+    credits_charged: int
+    remaining_credits: int
+    updated_prize_pool_cents: int

@@ -12,7 +12,7 @@ from app.config import settings
 from app.database import get_db, init_db_schema
 from app.models.challenges import Challenge
 from app.models.timezones import Timezone
-from app.routers import attempts, auth, challenges, health, payments, users
+from app.routers import attempts, auth, challenges, credits, health, payments, users
 from app.static_data.challenges import SEED_CHALLENGES
 from app.static_data.timezones import TimezoneEnum
 
@@ -78,6 +78,7 @@ async def seed_challenges(db: AsyncSession) -> None:
                 difficulty=seed_challenge.difficulty.value,
                 secret=seed_challenge.secret,
                 cost_per_attempt_cents=seed_challenge.cost_per_attempt_cents,
+                attack_cost_credits=seed_challenge.attack_cost_credits,
                 prize_pool_cents=seed_challenge.prize_pool_cents,
                 is_active=seed_challenge.is_active,
                 created_at=now,
@@ -107,6 +108,7 @@ app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(challenges.router)
 app.include_router(payments.router)
+app.include_router(credits.router)
 app.include_router(attempts.router)
 
 

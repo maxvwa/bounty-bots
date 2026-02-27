@@ -19,6 +19,7 @@ class Challenge(Base):
     difficulty: Mapped[str] = mapped_column(Text, nullable=False)
     secret: Mapped[str] = mapped_column(Text, nullable=False)
     cost_per_attempt_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    attack_cost_credits: Mapped[int] = mapped_column(BigInteger, nullable=False)
     prize_pool_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
