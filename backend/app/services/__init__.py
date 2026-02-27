@@ -1,1 +1,1 @@
-"""Service-layer helpers for auth, payment providers, and bot behavior."""
+"""Service-layer helpers for auth, credits, payment providers, and bot behavior."""

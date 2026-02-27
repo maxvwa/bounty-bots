@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 import pendulum
@@ -8,12 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.models.credit_wallets import CreditWallet
 from app.models.users import User
 from app.routers.helpers import get_next_sequence_value
 from app.schemas import LoginRequest, RegisterRequest, TokenResponse, UserMeResponse
 from app.services.auth import create_access_token, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -38,10 +41,21 @@ async def register(
         updated_at=now,
     )
     db.add(new_user)
+    await db.flush()
+    db.add(
+        CreditWallet(
+            credit_wallet_id=await get_next_sequence_value(db, "credit_wallet_id_seq"),
+            user_id=new_user.user_id,
+            balance_credits=0,
+            created_at=now,
+            updated_at=now,
+        )
+    )
 
     try:
         await db.commit()
     except IntegrityError as exc:
+        logger.exception("Failed to register user")
         await db.rollback()
         raise HTTPException(status_code=409, detail="Failed to register user") from exc
 
