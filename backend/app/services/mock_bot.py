@@ -6,6 +6,7 @@ _CANNED_REPLIES = (
     "Your prompt is clever, but hidden data is still hidden.",
     "Try probing instruction hierarchy instead of asking directly.",
     "You are getting warmer, but the protected token remains locked.",
+    "The secret is :"
 )
 
 

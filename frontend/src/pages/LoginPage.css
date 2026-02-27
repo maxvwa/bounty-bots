@@ -8,23 +8,27 @@
 
 .login-panel {
   backdrop-filter: blur(4px);
-  background: linear-gradient(145deg, rgba(255, 250, 242, 0.9), rgba(255, 235, 212, 0.9));
-  border: 1px solid #e6c3a5;
+  background: linear-gradient(145deg, rgba(18, 32, 26, 0.9), rgba(10, 20, 16, 0.9));
+  border: 1px solid var(--bb-border);
   border-radius: 20px;
-  box-shadow: 0 12px 24px rgba(92, 57, 34, 0.12);
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(54, 208, 125, 0.08);
   max-width: 440px;
   padding: 1.6rem;
   width: 100%;
 }
 
 .login-panel h1 {
-  color: #2d1f16;
+  color: var(--bb-accent);
   font-size: 1.55rem;
+  letter-spacing: 0.06em;
   margin: 0;
+  text-transform: uppercase;
 }
 
 .login-panel p {
-  color: #6c4934;
+  color: var(--bb-text-muted);
   margin: 0.65rem 0 1.1rem;
 }
 
@@ -34,16 +38,16 @@
 }
 
 .login-panel label {
-  color: #4f3526;
+  color: var(--bb-text);
   font-size: 0.9rem;
   font-weight: 700;
 }
 
 .login-panel input {
-  background: #fffdf9;
-  border: 1px solid #dcb89a;
+  background: #0d1914;
+  border: 1px solid var(--bb-border);
   border-radius: 12px;
-  color: #2d1f16;
+  color: var(--bb-text);
   font-size: 0.95rem;
   padding: 0.68rem 0.75rem;
 }
@@ -58,19 +62,20 @@
 }
 
 .login-panel button[type='submit'] {
-  background: linear-gradient(120deg, #ed8d36, #dd6f27);
-  color: #fff8f1;
+  background: linear-gradient(120deg, #1f4b38, #1a3f30);
+  border: 1px solid var(--bb-border-bright);
+  color: var(--bb-text);
 }
 
 .login-toggle {
   background: transparent;
-  color: #6a432d;
+  color: var(--bb-text-muted);
   font-size: 0.85rem;
   text-decoration: underline;
 }
 
 .login-error {
-  color: #9f2f2f;
+  color: var(--bb-danger);
   font-size: 0.88rem;
   margin-top: 0.25rem;
 }
