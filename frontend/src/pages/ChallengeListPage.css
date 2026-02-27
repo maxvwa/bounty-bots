@@ -1,0 +1,70 @@
+.challenge-list-page {
+  display: grid;
+  gap: 1.2rem;
+  padding: 0.4rem 0 0.8rem;
+}
+
+.challenge-list-page h1 {
+  color: #2f2016;
+  font-size: 1.7rem;
+  margin: 0;
+}
+
+.challenge-list-page p {
+  color: #674734;
+  margin: 0.45rem 0 0;
+}
+
+.challenge-grid {
+  display: grid;
+  gap: 0.95rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.challenge-card {
+  background: linear-gradient(150deg, #fffaf3, #ffefd8);
+  border: 1px solid #e5c7a8;
+  border-radius: 16px;
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+}
+
+.challenge-headline {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.challenge-card h2 {
+  color: #2f2016;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.challenge-headline span {
+  background: #ffd8aa;
+  border-radius: 999px;
+  color: #5e3f2a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.24rem 0.55rem;
+  text-transform: uppercase;
+}
+
+.challenge-card ul {
+  color: #60412e;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.challenge-card button {
+  background: #2f2016;
+  border: none;
+  border-radius: 12px;
+  color: #fff7ee;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.65rem 0.9rem;
+}

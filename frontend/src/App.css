@@ -1,32 +1,35 @@
-.app {
-  max-width: 600px;
-  margin: 4rem auto;
-  padding: 2rem;
-  font-family: system-ui, -apple-system, sans-serif;
+.app-shell {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0 auto;
+  max-width: 1180px;
+  min-height: 100vh;
+  padding: 1rem;
 }
 
-.app h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+.app-main {
+  background: rgba(255, 252, 247, 0.65);
+  border: 1px solid #edcfb2;
+  border-radius: 18px;
+  min-height: calc(100vh - 110px);
+  padding: 1rem;
 }
 
-.status {
-  font-weight: 600;
+.app-loading,
+.app-empty {
+  color: #4f3728;
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  width: 100%;
 }
 
-.status.online {
-  color: #22c55e;
-}
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 0.75rem;
+  }
 
-.status.offline {
-  color: #ef4444;
-}
-
-.status.checking {
-  color: #a3a3a3;
-}
-
-.hint {
-  color: #888;
-  font-size: 0.875rem;
+  .app-main {
+    padding: 0.75rem;
+  }
 }
