@@ -38,7 +38,27 @@ class Settings(BaseSettings):
     def cors_allowed_origins(self) -> list[str]:
         """Return allowed CORS origins as a normalized list."""
 
-        return [origin.strip() for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
+        configured_origins = [
+            origin.strip() for origin in self.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()
+        ]
+
+        if self.APP_ENV != "local":
+            return configured_origins
+
+        local_defaults = [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ]
+
+        merged = [*configured_origins]
+        for origin in local_defaults:
+            if origin not in merged:
+                merged.append(origin)
+        return merged
 
     def validate_runtime_config(self) -> None:
         """Validate minimal runtime constraints for local vs non-local modes."""
