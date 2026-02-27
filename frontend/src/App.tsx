@@ -1,163 +1,67 @@
-import { useEffect, useMemo, useState } from 'react'
-import './App.css'
-import { ApiError } from './api/client'
-import NavBar from './components/NavBar'
-import ProtectedRoute from './components/ProtectedRoute'
-import { useAuth } from './context/AuthContext'
-import ChallengeChatPage from './pages/ChallengeChatPage'
-import ChallengeListPage from './pages/ChallengeListPage'
-import LoginPage from './pages/LoginPage'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import Index from "@/pages/Index";
+import LoginPage from "@/pages/Login";
+import NotFound from "@/pages/NotFound";
 
-function useLocationPath() {
-  const [locationPath, setLocationPath] = useState(
-    `${window.location.pathname}${window.location.search}`,
-  )
+const queryClient = new QueryClient();
 
-  useEffect(() => {
-    const listener = () => {
-      setLocationPath(`${window.location.pathname}${window.location.search}`)
-    }
-
-    window.addEventListener('popstate', listener)
-    return () => {
-      window.removeEventListener('popstate', listener)
-    }
-  }, [])
-
-  const navigate = (nextPath: string) => {
-    if (nextPath === locationPath) {
-      return
-    }
-    window.history.pushState({}, '', nextPath)
-    setLocationPath(`${window.location.pathname}${window.location.search}`)
-  }
-
-  return {
-    locationPath,
-    pathname: window.location.pathname,
-    navigate,
-  }
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="font-mono text-muted-foreground">Initializing session...</p>
+    </div>
+  );
 }
 
-function readChallengeId(pathname: string): number | null {
-  const match = pathname.match(/^\/challenges\/(\d+)$/)
-  if (!match) {
-    return null
-  }
-
-  const parsed = Number(match[1])
-  if (Number.isNaN(parsed)) {
-    return null
-  }
-  return parsed
-}
-
-function App() {
-  const {
-    createCreditPurchase,
-    creditBalance,
-    currentUser,
-    isAuthenticated,
-    isInitializing,
-    login,
-    logout,
-    refreshCreditBalance,
-    register,
-  } = useAuth()
-  const { navigate, pathname } = useLocationPath()
-  const [isPurchasingCredits, setIsPurchasingCredits] = useState(false)
-  const [topUpError, setTopUpError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (isInitializing) {
-      return
-    }
-
-    if (pathname === '/') {
-      navigate(isAuthenticated ? '/challenges' : '/login')
-      return
-    }
-
-    if (isAuthenticated && pathname === '/login') {
-      navigate('/challenges')
-    }
-  }, [isAuthenticated, isInitializing, navigate, pathname])
-
-  const challengeId = useMemo(() => readChallengeId(pathname), [pathname])
-
-  const protectedContent = useMemo(() => {
-    if (pathname === '/challenges') {
-      return (
-        <ChallengeListPage
-          onNavigate={navigate}
-          onRefreshCredits={refreshCreditBalance}
-        />
-      )
-    }
-
-    if (challengeId) {
-      return <ChallengeChatPage challengeId={challengeId} onNavigate={navigate} />
-    }
-
-    return <section className="app-empty">Page not found.</section>
-  }, [challengeId, navigate, pathname, refreshCreditBalance])
+function ProtectedRoute() {
+  const { isAuthenticated, isInitializing } = useAuth();
 
   if (isInitializing) {
-    return <section className="app-loading">Loading...</section>
+    return <LoadingScreen />;
   }
 
-  const loginPage = (
-    <LoginPage
-      onLogin={login}
-      onRegister={register}
-      onAuthenticated={() => navigate('/challenges')}
-    />
-  )
-
-  async function handleTopUpCredits() {
-    setIsPurchasingCredits(true)
-    setTopUpError(null)
-    try {
-      const purchase = await createCreditPurchase(1000)
-      window.location.assign(purchase.checkout_url)
-    } catch (error) {
-      if (error instanceof ApiError && typeof error.body === 'object' && error.body) {
-        const body = error.body as { detail?: string }
-        setTopUpError(body.detail ?? 'Unable to create credit purchase')
-      } else {
-        setTopUpError('Unable to create credit purchase')
-      }
-      setIsPurchasingCredits(false)
-    }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
-  return (
-    <div className="app-shell">
-      <NavBar
-        currentPath={pathname}
-        isAuthenticated={isAuthenticated}
-        email={currentUser?.email ?? null}
-        balanceCredits={creditBalance}
-        isPurchasingCredits={isPurchasingCredits}
-        onNavigate={navigate}
-        onTopUpCredits={() => void handleTopUpCredits()}
-        onLogout={() => {
-          logout()
-          navigate('/login')
-        }}
-      />
-      <main className="app-main">
-        {topUpError && <p className="app-error-banner">{topUpError}</p>}
-        {pathname === '/login' ? (
-          loginPage
-        ) : (
-          <ProtectedRoute isAuthenticated={isAuthenticated} fallback={loginPage}>
-            {protectedContent}
-          </ProtectedRoute>
-        )}
-      </main>
-    </div>
-  )
+  return <Index />;
 }
 
-export default App
+function LoginRoute() {
+  const { isAuthenticated, isInitializing } = useAuth();
+
+  if (isInitializing) {
+    return <LoadingScreen />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/challenges" replace />;
+  }
+
+  return <LoginPage />;
+}
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginRoute />} />
+          <Route path="/" element={<Navigate to="/challenges" replace />} />
+          <Route path="/challenges" element={<ProtectedRoute />} />
+          <Route path="/challenges/:challengeId" element={<ProtectedRoute />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;

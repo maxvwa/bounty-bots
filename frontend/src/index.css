@@ -1,74 +1,96 @@
-:root {
-  font-family: 'Avenir Next', 'Trebuchet MS', 'Segoe UI', sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #d4ebdc;
-  background-color: #050b08;
-  color-scheme: dark;
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-  --bb-bg-0: #050b08;
-  --bb-bg-1: #09120e;
-  --bb-bg-2: #0e1a15;
-  --bb-panel: #101d18;
-  --bb-panel-soft: #14231d;
-  --bb-border: #224034;
-  --bb-border-bright: #2f5f4d;
-  --bb-text: #d4ebdc;
-  --bb-text-muted: #88ac97;
-  --bb-accent: #36d07d;
-  --bb-accent-strong: #23b667;
-  --bb-warning: #d9be66;
-  --bb-danger: #ff7f7f;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  :root {
+    --background: 220 20% 4%;
+    --foreground: 140 60% 90%;
+
+    --card: 220 20% 7%;
+    --card-foreground: 140 60% 90%;
+
+    --popover: 220 20% 7%;
+    --popover-foreground: 140 60% 90%;
+
+    --primary: 140 70% 45%;
+    --primary-foreground: 220 20% 4%;
+
+    --secondary: 220 15% 14%;
+    --secondary-foreground: 140 60% 80%;
+
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 280 70% 55%;
+    --accent-foreground: 280 100% 95%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 140 30% 18%;
+    --input: 220 15% 14%;
+    --ring: 140 70% 45%;
+
+    --radius: 0.5rem;
+
+    --neon-glow: 140 70% 45%;
+    --neon-purple: 280 70% 55%;
+    --neon-cyan: 185 70% 50%;
+    --bounty-gold: 45 90% 55%;
+
+    --sidebar-background: 220 20% 6%;
+    --sidebar-foreground: 140 60% 90%;
+    --sidebar-primary: 140 70% 45%;
+    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 140 60% 80%;
+    --sidebar-border: 140 30% 18%;
+    --sidebar-ring: 140 70% 45%;
+  }
 }
 
-a {
-  color: inherit;
-  font-weight: 500;
-  text-decoration: inherit;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  code, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
 }
 
-body {
-  background:
-    repeating-linear-gradient(
-      180deg,
-      rgba(143, 209, 168, 0.04) 0px,
-      rgba(143, 209, 168, 0.04) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    radial-gradient(circle at 10% 0%, #15281f 0%, #08100d 35%, #050b08 100%);
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
+@layer utilities {
+  .neon-text {
+    text-shadow: 0 0 7px hsl(var(--neon-glow) / 0.6),
+                 0 0 20px hsl(var(--neon-glow) / 0.3),
+                 0 0 40px hsl(var(--neon-glow) / 0.15);
+  }
 
-button {
-  border-radius: 10px;
-  border: 1px solid var(--bb-border-bright);
-  padding: 0.6em 1em;
-  font-size: 0.95em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #12231c;
-  color: var(--bb-text);
-  cursor: pointer;
-  transition:
-    transform 120ms ease,
-    border-color 120ms ease,
-    box-shadow 120ms ease;
-}
-button:hover {
-  transform: translateY(-1px);
-  border-color: var(--bb-accent);
-  box-shadow: 0 0 0 1px rgba(54, 208, 125, 0.3);
-}
-button:focus,
-button:focus-visible {
-  outline: 2px solid var(--bb-accent);
-  outline-offset: 1px;
+  .neon-border {
+    box-shadow: 0 0 5px hsl(var(--neon-glow) / 0.3),
+                inset 0 0 5px hsl(var(--neon-glow) / 0.1);
+  }
+
+  .neon-border-purple {
+    box-shadow: 0 0 5px hsl(var(--neon-purple) / 0.3),
+                inset 0 0 5px hsl(var(--neon-purple) / 0.1);
+  }
+
+  .scanline {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(var(--neon-glow) / 0.03) 2px,
+      hsl(var(--neon-glow) / 0.03) 4px
+    );
+  }
 }
