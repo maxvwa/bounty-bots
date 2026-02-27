@@ -1,0 +1,18 @@
+
+  VITE v7.3.1  ready in 177 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+12:21:46 PM [vite] (client) hmr update /src/App.tsx
+12:21:47 PM [vite] (client) hmr update /src/App.css
+12:21:49 PM [vite] (client) hmr update /src/index.css
+12:44:49 PM [vite] (client) page reload index.html
+12:44:49 PM [vite] changed tsconfig file detected: /Users/ernestvanwalsem/workspace/bounty-bots/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+12:44:49 PM [vite] (client) hmr update /src/index.css
+12:44:49 PM [vite] (client) hmr update /src/App.tsx
+12:44:49 PM [vite] (client) hmr update /src/App.css
+12:44:49 PM [vite] (client) page reload src/main.tsx
+12:44:49 PM [vite] vite.config.ts changed, restarting server...
+12:44:49 PM [vite] server restarted.
+12:46:27 PM [vite] (client) page reload index.html
+12:46:27 PM [vite] changed tsconfig file detected: /Users/ernestvanwalsem/workspace/bounty-bots/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
