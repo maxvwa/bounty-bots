@@ -1,0 +1,32 @@
+.app {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 2rem;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.app h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.status {
+  font-weight: 600;
+}
+
+.status.online {
+  color: #22c55e;
+}
+
+.status.offline {
+  color: #ef4444;
+}
+
+.status.checking {
+  color: #a3a3a3;
+}
+
+.hint {
+  color: #888;
+  font-size: 0.875rem;
+}
