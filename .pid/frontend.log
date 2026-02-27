@@ -16,3 +16,4 @@
 12:44:49 PM [vite] server restarted.
 12:46:27 PM [vite] (client) page reload index.html
 12:46:27 PM [vite] changed tsconfig file detected: /Users/ernestvanwalsem/workspace/bounty-bots/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+1:22:20 PM [vite] (client) ✨ new dependencies optimized: react/jsx-dev-runtime, react, react-dom/client
