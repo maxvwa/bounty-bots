@@ -30,6 +30,10 @@ export default function LoginPage() {
       if (requestError instanceof ApiError && typeof requestError.body === 'object') {
         const body = requestError.body as { detail?: string }
         setError(body.detail ?? 'Authentication failed')
+      } else if (requestError instanceof Error) {
+        setError(
+          `Authentication failed (${requestError.message}). Check backend availability and CORS settings.`,
+        )
       } else {
         setError('Authentication failed')
       }

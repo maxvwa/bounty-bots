@@ -8,6 +8,7 @@ FRONTEND_PORT="${TEMPLATE_FRONTEND_PORT:-5173}"
 BACKEND_HEALTH_URL="${TEMPLATE_BACKEND_HEALTH_URL:-http://localhost:8000/health}"
 REQUIRE_BACKEND_HEALTH="${TEMPLATE_REQUIRE_BACKEND_HEALTH:-false}"
 FRONTEND_READY_TIMEOUT_SECONDS="${TEMPLATE_FRONTEND_READY_TIMEOUT_SECONDS:-30}"
+CLEAR_VITE_CACHE="${TEMPLATE_FRONTEND_CLEAR_VITE_CACHE:-true}"
 
 mkdir -p "$PID_DIR"
 
@@ -17,9 +18,20 @@ if [[ ! -f "$FRONTEND_DIR/package.json" ]]; then
     exit 1
 fi
 
-if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
+install_frontend_dependencies() {
     echo "Installing frontend dependencies..."
     (cd "$FRONTEND_DIR" && npm install)
+}
+
+if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
+    install_frontend_dependencies
+elif [[ -f "$FRONTEND_DIR/package-lock.json" && "$FRONTEND_DIR/package-lock.json" -nt "$FRONTEND_DIR/node_modules" ]]; then
+    echo "Detected newer package-lock.json; refreshing frontend dependencies..."
+    install_frontend_dependencies
+fi
+
+if [[ "$CLEAR_VITE_CACHE" == "true" ]]; then
+    rm -rf "$FRONTEND_DIR/.vite"
 fi
 
 if ! curl -fsS "$BACKEND_HEALTH_URL" >/dev/null 2>&1; then
@@ -42,36 +54,53 @@ if [[ -f "$PID_DIR/frontend.pid" ]]; then
     rm -f "$PID_DIR/frontend.pid"
 fi
 
-# --- Start Vite dev server in background ------------------------------------
-echo "Starting Vite dev server on port $FRONTEND_PORT..."
-(
-    cd "$FRONTEND_DIR"
-    nohup npx vite --port "$FRONTEND_PORT" \
-        > "$PID_DIR/frontend.log" 2>&1 < /dev/null &
-    echo $! > "$PID_DIR/frontend.pid"
-)
+attempt_start() {
+    local attempt="$1"
 
-echo -n "Waiting for frontend to be ready"
-elapsed=0
-until curl -fsS "http://localhost:$FRONTEND_PORT" >/dev/null 2>&1; do
-    if ! kill -0 "$(cat "$PID_DIR/frontend.pid")" 2>/dev/null; then
-        echo ""
+    echo "Starting Vite dev server on port $FRONTEND_PORT (attempt $attempt)..."
+    (
+        cd "$FRONTEND_DIR"
+        nohup npx vite --port "$FRONTEND_PORT" \
+            > "$PID_DIR/frontend.log" 2>&1 < /dev/null &
+        echo $! > "$PID_DIR/frontend.pid"
+    )
+
+    echo -n "Waiting for frontend to be ready"
+    elapsed=0
+    until curl -fsS "http://localhost:$FRONTEND_PORT" >/dev/null 2>&1; do
+        if ! kill -0 "$(cat "$PID_DIR/frontend.pid")" 2>/dev/null; then
+            echo ""
+            return 1
+        fi
+
+        if (( elapsed >= FRONTEND_READY_TIMEOUT_SECONDS )); then
+            echo ""
+            return 2
+        fi
+        echo -n "."
+        sleep 1
+        elapsed=$((elapsed + 1))
+    done
+    echo " ready"
+    return 0
+}
+
+if ! attempt_start 1; then
+    if rg -q "Failed to resolve import|ENOENT|Cannot find module" "$PID_DIR/frontend.log"; then
+        echo "Detected frontend dependency/import mismatch. Attempting automatic recovery..."
+        rm -rf "$FRONTEND_DIR/.vite"
+        install_frontend_dependencies
+        if ! attempt_start 2; then
+            echo "error: frontend process exited before becoming ready." >&2
+            echo "hint: check $PID_DIR/frontend.log for details." >&2
+            exit 1
+        fi
+    else
         echo "error: frontend process exited before becoming ready." >&2
         echo "hint: check $PID_DIR/frontend.log for details." >&2
         exit 1
     fi
-
-    if (( elapsed >= FRONTEND_READY_TIMEOUT_SECONDS )); then
-        echo ""
-        echo "error: frontend did not respond within ${FRONTEND_READY_TIMEOUT_SECONDS} seconds." >&2
-        echo "hint: check $PID_DIR/frontend.log for details." >&2
-        exit 1
-    fi
-    echo -n "."
-    sleep 1
-    elapsed=$((elapsed + 1))
-done
-echo " ready"
+fi
 
 echo ""
 echo "  Frontend  : http://localhost:$FRONTEND_PORT"
