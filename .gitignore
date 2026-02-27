@@ -3,3 +3,11 @@ node_modules/
 dist/
 .env.local
 .direnv/
+.env
+.env.auth.local
+backend/.env
+frontend/.env.local
+frontend/.env.production
+.pid/
+__pycache__/
+*.pyc
