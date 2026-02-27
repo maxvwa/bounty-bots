@@ -27,6 +27,82 @@ from app.static_data.economy import CENTS_PER_CREDIT
 router = APIRouter(prefix="/credits", tags=["credits"])
 
 
+async def _create_demo_credit_purchase(
+    *,
+    amount_cents: int,
+    current_user: User,
+    db: AsyncSession,
+) -> CreditPurchaseCreateResponse:
+    """Create an immediate paid credit purchase for demonstration flows."""
+
+    if amount_cents % CENTS_PER_CREDIT != 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"amount_cents must be divisible by {CENTS_PER_CREDIT}",
+        )
+
+    credits_purchased = amount_cents // CENTS_PER_CREDIT
+    if credits_purchased <= 0:
+        raise HTTPException(status_code=400, detail="credits_purchased must be greater than zero")
+
+    now = pendulum.now("UTC").naive()
+    purchase = CreditPurchase(
+        credit_purchase_id=await get_next_sequence_value(db, "credit_purchase_id_seq"),
+        user_id=current_user.user_id,
+        mollie_payment_id=None,
+        amount_cents=amount_cents,
+        credits_purchased=credits_purchased,
+        status="pending",
+        created_at=now,
+        updated_at=now,
+    )
+    db.add(purchase)
+
+    wallet = await get_or_create_wallet_for_update(db, current_user.user_id)
+    wallet.balance_credits += credits_purchased
+    wallet.updated_at = now
+
+    purchase.status = "paid"
+    purchase.mollie_payment_id = f"demo_credit_{purchase.credit_purchase_id}"
+    purchase.updated_at = now
+
+    db.add(
+        CreditTransaction(
+            credit_transaction_id=await get_next_sequence_value(db, "credit_transaction_id_seq"),
+            user_id=current_user.user_id,
+            challenge_id=None,
+            credit_purchase_id=purchase.credit_purchase_id,
+            delta_credits=credits_purchased,
+            transaction_type="purchase_demo",
+            created_at=now,
+        )
+    )
+
+    await db.commit()
+    return CreditPurchaseCreateResponse(
+        credit_purchase_id=purchase.credit_purchase_id,
+        credits_purchased=purchase.credits_purchased,
+        amount_cents=purchase.amount_cents,
+        status=purchase.status,
+        checkout_url="",
+    )
+
+
+@router.post("/purchases/demo", response_model=CreditPurchaseCreateResponse, status_code=201)
+async def create_demo_credit_purchase(
+    payload: CreditPurchaseCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> CreditPurchaseCreateResponse:
+    """Immediately credit wallet without external checkout for demo purposes."""
+
+    return await _create_demo_credit_purchase(
+        amount_cents=payload.amount_cents,
+        current_user=current_user,
+        db=db,
+    )
+
+
 @router.post("/purchases", response_model=CreditPurchaseCreateResponse, status_code=201)
 async def create_credit_purchase(
     payload: CreditPurchaseCreateRequest,
@@ -60,35 +136,10 @@ async def create_credit_purchase(
 
     should_skip_checkout = payload.demo_skip_checkout or settings.DEMO_SKIP_CREDITS_CHECKOUT
     if should_skip_checkout:
-        wallet = await get_or_create_wallet_for_update(db, current_user.user_id)
-        wallet.balance_credits += credits_purchased
-        wallet.updated_at = now
-
-        purchase.status = "paid"
-        purchase.mollie_payment_id = f"demo_credit_{purchase.credit_purchase_id}"
-        purchase.updated_at = now
-
-        db.add(
-            CreditTransaction(
-                credit_transaction_id=await get_next_sequence_value(
-                    db, "credit_transaction_id_seq"
-                ),
-                user_id=current_user.user_id,
-                challenge_id=None,
-                credit_purchase_id=purchase.credit_purchase_id,
-                delta_credits=credits_purchased,
-                transaction_type="purchase_demo",
-                created_at=now,
-            )
-        )
-
-        await db.commit()
-        return CreditPurchaseCreateResponse(
-            credit_purchase_id=purchase.credit_purchase_id,
-            credits_purchased=purchase.credits_purchased,
-            amount_cents=purchase.amount_cents,
-            status=purchase.status,
-            checkout_url="",
+        return await _create_demo_credit_purchase(
+            amount_cents=payload.amount_cents,
+            current_user=current_user,
+            db=db,
         )
 
     redirect_base_url = settings.MOLLIE_REDIRECT_BASE_URL.rstrip("/")

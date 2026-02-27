@@ -46,7 +46,7 @@ async def register(
         CreditWallet(
             credit_wallet_id=await get_next_sequence_value(db, "credit_wallet_id_seq"),
             user_id=new_user.user_id,
-            balance_credits=0,
+            balance_credits=10_000,
             created_at=now,
             updated_at=now,
         )

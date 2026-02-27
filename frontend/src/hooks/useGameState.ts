@@ -426,17 +426,20 @@ export function useGameState() {
       throw new Error("creditsToBuy must be positive");
     }
 
-    const purchase = await apiFetch<CreditPurchaseCreateResponse>("/credits/purchases", {
-      method: "POST",
-      body: JSON.stringify({
-        amount_cents: amountCents,
-        demo_skip_checkout: true,
-      }),
-    });
-
-    if (purchase.checkout_url && purchase.checkout_url.trim().length > 0) {
-      window.location.assign(purchase.checkout_url);
-      return;
+    let purchase: CreditPurchaseCreateResponse;
+    try {
+      purchase = await apiFetch<CreditPurchaseCreateResponse>("/credits/purchases/demo", {
+        method: "POST",
+        body: JSON.stringify({
+          amount_cents: amountCents,
+        }),
+      });
+    } catch (error) {
+      if (error instanceof ApiError && typeof error.body === "object" && error.body) {
+        const body = error.body as { detail?: string };
+        throw new Error(body.detail ?? "Unable to purchase credits");
+      }
+      throw error;
     }
 
     await refreshCredits();

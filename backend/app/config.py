@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     MOLLIE_API_KEY: str = ""
     MOLLIE_REDIRECT_BASE_URL: str = "http://localhost:5173"
     MOLLIE_WEBHOOK_BASE_URL: str = "http://localhost:8000"
+    DEMO_SKIP_CREDITS_CHECKOUT: bool = False
     CORS_ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://localhost:8000"
 
     @property

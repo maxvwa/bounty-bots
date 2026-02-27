@@ -71,8 +71,12 @@ export function BuyCreditsDialog({
       await onPurchase(pkg.credits);
       setPurchasing(null);
       onOpenChange(false);
-    } catch {
-      setError("Failed to initiate checkout");
+    } catch (error) {
+      if (error instanceof Error && error.message.trim().length > 0) {
+        setError(error.message);
+      } else {
+        setError("Failed to initiate checkout");
+      }
       setPurchasing(null);
     }
   }
