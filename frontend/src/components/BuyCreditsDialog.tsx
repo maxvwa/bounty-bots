@@ -69,6 +69,8 @@ export function BuyCreditsDialog({
 
     try {
       await onPurchase(pkg.credits);
+      setPurchasing(null);
+      onOpenChange(false);
     } catch {
       setError("Failed to initiate checkout");
       setPurchasing(null);
@@ -83,7 +85,7 @@ export function BuyCreditsDialog({
             Buy Credits
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            One credit equals €0.10. You will be redirected to Mollie checkout.
+            One credit equals €0.10. Demo mode can add credits instantly.
           </DialogDescription>
         </DialogHeader>
 

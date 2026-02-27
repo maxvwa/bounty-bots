@@ -7,6 +7,7 @@ class CreditPurchaseCreateRequest(BaseModel):
     """Request payload for creating a credit purchase checkout."""
 
     amount_cents: int
+    demo_skip_checkout: bool = False
 
     @field_validator("amount_cents")
     @classmethod

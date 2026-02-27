@@ -428,11 +428,20 @@ export function useGameState() {
 
     const purchase = await apiFetch<CreditPurchaseCreateResponse>("/credits/purchases", {
       method: "POST",
-      body: JSON.stringify({ amount_cents: amountCents }),
+      body: JSON.stringify({
+        amount_cents: amountCents,
+        demo_skip_checkout: true,
+      }),
     });
 
-    window.location.assign(purchase.checkout_url);
-  }, []);
+    if (purchase.checkout_url && purchase.checkout_url.trim().length > 0) {
+      window.location.assign(purchase.checkout_url);
+      return;
+    }
+
+    await refreshCredits();
+    setStatusMessage(`Credits added successfully (+${purchase.credits_purchased} credits).`);
+  }, [refreshCredits]);
 
   const completeCreditPurchase = useCallback(
     async (purchaseId: number) => {

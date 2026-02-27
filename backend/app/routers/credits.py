@@ -58,6 +58,39 @@ async def create_credit_purchase(
     )
     db.add(purchase)
 
+    should_skip_checkout = payload.demo_skip_checkout or settings.DEMO_SKIP_CREDITS_CHECKOUT
+    if should_skip_checkout:
+        wallet = await get_or_create_wallet_for_update(db, current_user.user_id)
+        wallet.balance_credits += credits_purchased
+        wallet.updated_at = now
+
+        purchase.status = "paid"
+        purchase.mollie_payment_id = f"demo_credit_{purchase.credit_purchase_id}"
+        purchase.updated_at = now
+
+        db.add(
+            CreditTransaction(
+                credit_transaction_id=await get_next_sequence_value(
+                    db, "credit_transaction_id_seq"
+                ),
+                user_id=current_user.user_id,
+                challenge_id=None,
+                credit_purchase_id=purchase.credit_purchase_id,
+                delta_credits=credits_purchased,
+                transaction_type="purchase_demo",
+                created_at=now,
+            )
+        )
+
+        await db.commit()
+        return CreditPurchaseCreateResponse(
+            credit_purchase_id=purchase.credit_purchase_id,
+            credits_purchased=purchase.credits_purchased,
+            amount_cents=purchase.amount_cents,
+            status=purchase.status,
+            checkout_url="",
+        )
+
     redirect_base_url = settings.MOLLIE_REDIRECT_BASE_URL.rstrip("/")
     redirect_url = (
         f"{redirect_base_url}/challenges?credit_purchase_id={purchase.credit_purchase_id}"
