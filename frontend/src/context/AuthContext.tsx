@@ -53,6 +53,14 @@ async function fetchCreditBalance(token: string): Promise<number> {
   return payload.balance_credits
 }
 
+async function fetchCreditBalanceSafe(token: string): Promise<number> {
+  try {
+    return await fetchCreditBalance(token)
+  } catch {
+    return 0
+  }
+}
+
 function useAuthState() {
   const [token, setToken] = useState<string | null>(() => loadAuthToken())
   const [currentUser, setCurrentUser] = useState<UserMe | null>(null)
@@ -87,16 +95,15 @@ function useAuthState() {
       saveAuthToken(nextToken)
       setToken(nextToken)
       try {
-        const [me, balance] = await Promise.all([
-          fetchCurrentUser(nextToken),
-          fetchCreditBalance(nextToken),
-        ])
+        const me = await fetchCurrentUser(nextToken)
         setCurrentUser(me)
-        setCreditBalance(balance)
       } catch {
         logout()
         throw new Error('Unable to load authenticated user')
       }
+
+      const balance = await fetchCreditBalanceSafe(nextToken)
+      setCreditBalance(balance)
     },
     [logout],
   )
@@ -149,10 +156,8 @@ function useAuthState() {
       }
 
       try {
-        const [me, balance] = await Promise.all([
-          fetchCurrentUser(existingToken),
-          fetchCreditBalance(existingToken),
-        ])
+        const me = await fetchCurrentUser(existingToken)
+        const balance = await fetchCreditBalanceSafe(existingToken)
         setToken(existingToken)
         setCurrentUser(me)
         setCreditBalance(balance)
