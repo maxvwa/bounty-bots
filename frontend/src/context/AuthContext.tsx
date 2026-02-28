@@ -28,6 +28,8 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+const SKIP_AUTH = (import.meta.env.VITE_SKIP_AUTH ?? "true") === "true"
+const DEMO_TOKEN = "__demo__"
 
 async function fetchCurrentUser(token: string): Promise<UserMe> {
   return apiFetch<UserMe>('/auth/me', {
@@ -37,11 +39,16 @@ async function fetchCurrentUser(token: string): Promise<UserMe> {
 }
 
 function useAuthState() {
-  const [token, setToken] = useState<string | null>(() => loadAuthToken())
+  const [token, setToken] = useState<string | null>(() =>
+    SKIP_AUTH ? DEMO_TOKEN : loadAuthToken(),
+  )
   const [currentUser, setCurrentUser] = useState<UserMe | null>(null)
   const [isInitializing, setIsInitializing] = useState<boolean>(true)
 
   const logout = useCallback(() => {
+    if (SKIP_AUTH) {
+      return
+    }
     clearAuthToken()
     setToken(null)
     setCurrentUser(null)
@@ -49,6 +56,12 @@ function useAuthState() {
 
   const applyToken = useCallback(
     async (nextToken: string) => {
+      if (SKIP_AUTH) {
+        setToken(DEMO_TOKEN)
+        const me = await fetchCurrentUser(DEMO_TOKEN)
+        setCurrentUser(me)
+        return
+      }
       saveAuthToken(nextToken)
       setToken(nextToken)
       try {
@@ -64,6 +77,10 @@ function useAuthState() {
 
   const login = useCallback(
     async (email: string, password: string) => {
+      if (SKIP_AUTH) {
+        await applyToken(DEMO_TOKEN)
+        return
+      }
       const response = await apiFetch<AuthTokenResponse>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
@@ -76,6 +93,10 @@ function useAuthState() {
 
   const register = useCallback(
     async (email: string, password: string) => {
+      if (SKIP_AUTH) {
+        await applyToken(DEMO_TOKEN)
+        return
+      }
       const response = await apiFetch<AuthTokenResponse>('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
@@ -88,6 +109,17 @@ function useAuthState() {
 
   useEffect(() => {
     const bootstrap = async () => {
+      if (SKIP_AUTH) {
+        try {
+          const me = await fetchCurrentUser(DEMO_TOKEN)
+          setToken(DEMO_TOKEN)
+          setCurrentUser(me)
+        } finally {
+          setIsInitializing(false)
+        }
+        return
+      }
+
       const existingToken = loadAuthToken()
       if (!existingToken) {
         setIsInitializing(false)

@@ -14,6 +14,21 @@ _BASE_URL = os.environ.get("TEST_DATABASE_BASE_URL", settings.DATABASE_URL.rspli
 TEST_DATABASE_URL = f"{_BASE_URL}/app_db_test"
 
 
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def test_settings_overrides() -> AsyncGenerator[None]:
+    """Force auth-sensitive tests to run with auth enforcement enabled."""
+
+    previous_demo_skip_auth = settings.DEMO_SKIP_AUTH
+    previous_demo_skip_credits_checkout = settings.DEMO_SKIP_CREDITS_CHECKOUT
+    settings.DEMO_SKIP_AUTH = False
+    settings.DEMO_SKIP_CREDITS_CHECKOUT = False
+    try:
+        yield
+    finally:
+        settings.DEMO_SKIP_AUTH = previous_demo_skip_auth
+        settings.DEMO_SKIP_CREDITS_CHECKOUT = previous_demo_skip_credits_checkout
+
+
 @pytest_asyncio.fixture(scope="session")
 async def test_engine() -> AsyncGenerator[AsyncEngine]:
     """Create and drop a dedicated test database for the session."""

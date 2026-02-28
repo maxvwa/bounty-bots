@@ -426,20 +426,44 @@ export function useGameState() {
       throw new Error("creditsToBuy must be positive");
     }
 
-    let purchase: CreditPurchaseCreateResponse;
+    let purchase: CreditPurchaseCreateResponse | null = null;
     try {
-      purchase = await apiFetch<CreditPurchaseCreateResponse>("/credits/purchases/demo", {
+      purchase = await apiFetch<CreditPurchaseCreateResponse>("/credits/purchases", {
         method: "POST",
         body: JSON.stringify({
           amount_cents: amountCents,
+          demo_skip_checkout: true,
         }),
       });
     } catch (error) {
       if (error instanceof ApiError && typeof error.body === "object" && error.body) {
         const body = error.body as { detail?: string };
-        throw new Error(body.detail ?? "Unable to purchase credits");
+        // Backward-compatible fallback for backend versions that still try Mollie.
+        if (error.status === 502 || body.detail === "Payment provider unavailable") {
+          try {
+            purchase = await apiFetch<CreditPurchaseCreateResponse>("/credits/purchases/demo", {
+              method: "POST",
+              body: JSON.stringify({ amount_cents: amountCents }),
+            });
+          } catch (fallbackError) {
+            if (fallbackError instanceof ApiError && [404, 405].includes(fallbackError.status)) {
+              throw new Error(
+                "Demo credit endpoint unavailable. Restart backend services and retry.",
+              );
+            }
+            throw fallbackError;
+          }
+        } else {
+          throw new Error(body.detail ?? "Unable to purchase credits");
+        }
       }
-      throw error;
+      if (purchase === null) {
+        throw error;
+      }
+    }
+
+    if (purchase === null) {
+      throw new Error("Unable to purchase credits");
     }
 
     await refreshCredits();
